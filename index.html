@@ -4,28 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Recreate This Trip</title>
-  <meta name="description" content="Paste a Kara and Nate flight video and see how you could book the same trip with points. A fan-made project.">
+  <meta name="description" content="Pick a flight from Kara and Nate's videos, see what it cost in points, and how close your own cards get you. A fan-made project.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="top">
-    <div class="top-in">
-      <a class="brand" href="#/">Recreate <span>This</span> Trip</a>
-      <nav id="nav"></nav>
+  <header class="ptop">
+    <div class="wrap ptop-in">
+      <a class="brand" href="#/">Recreate this trip</a>
+      <nav id="pnav"></nav>
     </div>
   </header>
+  <aside class="side" id="side"></aside>
+  <header class="mtop" id="mtop"></header>
 
   <main id="view"></main>
 
-  <footer class="foot">
-    <p>A fan-made prototype by <a href="https://github.com/adam-zhu1">Adam Zhu</a>. Not affiliated with Kara and Nate or Daily Drop.</p>
-    <p>Points prices are what was shown in each video and change all the time. Check before you transfer anything.</p>
+  <nav class="tabbar" id="tabbar"></nav>
+  <footer class="foot wrap">
+    <span>A fan project by <a href="https://github.com/adam-zhu1">Adam Zhu</a></span>
+    <span>Not affiliated with Kara and Nate or Daily Drop</span>
   </footer>
 
   <script src="js/util.js"></script>
   <script src="js/anim.js"></script>
+  <script src="js/data/trips.js"></script>
+  <script src="js/data/transfers.js"></script>
   <script src="js/links.js"></script>
   <script src="js/views/browse.js"></script>
+  <script src="js/views/trip.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

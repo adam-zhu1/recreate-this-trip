@@ -86,3 +86,38 @@ RTT.month = (ym) => {
   const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return m ? names[Number(m) - 1] + " " + y : y || "";
 };
+
+// Points along the great circle between two airports, so long flights curve
+// like they do on a real route map. Longitudes are kept continuous so a
+// Pacific crossing doesn't streak across the whole map.
+RTT.arc = function (a, b, n) {
+  n = n || 64;
+  const rad = Math.PI / 180;
+  const toVec = (p) => [Math.cos(p.lat * rad) * Math.cos(p.lon * rad), Math.cos(p.lat * rad) * Math.sin(p.lon * rad), Math.sin(p.lat * rad)];
+  const va = toVec(a), vb = toVec(b);
+  const dot = Math.min(1, Math.max(-1, va[0] * vb[0] + va[1] * vb[1] + va[2] * vb[2]));
+  const w = Math.acos(dot);
+  if (w < 1e-6) return [[a.lat, a.lon], [b.lat, b.lon]];
+  const pts = [];
+  let prevLon = null;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const s1 = Math.sin((1 - t) * w) / Math.sin(w), s2 = Math.sin(t * w) / Math.sin(w);
+    const x = s1 * va[0] + s2 * vb[0], y = s1 * va[1] + s2 * vb[1], z = s1 * va[2] + s2 * vb[2];
+    const lat = Math.atan2(z, Math.sqrt(x * x + y * y)) / rad;
+    let lon = Math.atan2(y, x) / rad;
+    if (prevLon != null) {
+      while (lon - prevLon > 180) lon -= 360;
+      while (lon - prevLon < -180) lon += 360;
+    }
+    prevLon = lon;
+    pts.push([lat, lon]);
+  }
+  return pts;
+};
+
+// "ATH → EWR" for the big label, "Athens to Newark" for the line under it
+RTT.codes = (t) => (t.from === t.to ? RTT.esc(t.from) + " &#8635;" : RTT.esc(t.from) + " &rarr; " + RTT.esc(t.to));
+RTT.cities = (t) => (t.from === t.to
+  ? "Around the world from " + RTT.esc(RTT.cityName(t.from))
+  : RTT.esc(RTT.cityName(t.from)) + " to " + RTT.esc(RTT.cityName(t.to)));
