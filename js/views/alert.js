@@ -1,36 +1,33 @@
-// What a seat alert for this exact trip could look like. A mockup:
-// there's no award availability data behind it.
+// A seat alert for this exact trip. Only a preview: there's no award
+// availability data behind it, so it just remembers the route you picked.
 RTT.parts.alert = function (el, trip) {
   if (trip.program === "cash" || !trip.from || !trip.to) return;
-  const prog = RTT.programs && RTT.programs[RTT.tripProgram(trip)];
+  const watching = (RTT.load("watching", []) || []).find((w) => w && w.trip === trip.id);
 
   el.innerHTML = `
     <details class="fold">
       <summary>Seat alert</summary>
       <div>
-        <div class="mock">
-          <span class="lbl">Mockup</span>
-          <div class="row">
-            <div><label>When</label>
-              <select id="when"><option>Next 11 months</option><option>Spring</option><option>Summer</option><option>Fall</option><option>Winter</option></select></div>
-            <button type="button" id="set">Watch this route</button>
-          </div>
-          <div id="pinged"></div>
+        <div class="row alert-row">
+          <div><label for="when">When</label>
+            <select id="when">${["Next 11 months", "Spring", "Summer", "Fall", "Winter"].map((w) =>
+              `<option${watching && watching.when === w ? " selected" : ""}>${w}</option>`).join("")}</select></div>
+          <button type="button" id="set">${watching ? "Update" : "Watch this route"}</button>
         </div>
-        <p class="small muted" style="margin:12px 0 0">Not live. <a href="#/about">Why</a></p>
+        <p class="small" id="pinged">${watching ? `Watching ${RTT.esc(trip.from)} &rarr; ${RTT.esc(trip.to)}, ${RTT.esc(String(watching.when || "").toLowerCase())}.` : ""}</p>
+        <p class="small muted note">Preview only. There's no live seat data behind this.</p>
       </div>
     </details>`;
 
   RTT.$("#set", el).addEventListener("click", () => {
+    const when = RTT.$("#when", el).value;
     if (!trip.custom) {
-      const list = RTT.load("watching", []).filter((w) => w.trip !== trip.id);
-      list.unshift({ trip: trip.id, when: RTT.$("#when", el).value });
+      const list = (RTT.load("watching", []) || []).filter((w) => w && w.trip !== trip.id);
+      list.unshift({ trip: trip.id, when });
       RTT.save("watching", list);
     }
-    RTT.$("#pinged", el).innerHTML = `
-      <div class="ping"><span class="dot"></span>
-        <div><b>${RTT.esc(trip.from)} &rarr; ${RTT.esc(trip.to)}, 2 seats open</b><br>
-        <span class="small muted">Mar 14, ${trip.points != null ? RTT.fmt(trip.points) + " " : ""}${RTT.esc(prog ? prog.name : "")} miles</span></div>
-      </div>`;
+    RTT.$("#set", el).textContent = "Update";
+    RTT.$("#pinged", el).innerHTML = `Watching ${RTT.esc(trip.from)} &rarr; ${RTT.esc(trip.to)}, ${RTT.esc(when.toLowerCase())}.` +
+      (trip.custom ? "" : ` It's listed on <a href="#/trips">Trips</a>.`);
   });
 };

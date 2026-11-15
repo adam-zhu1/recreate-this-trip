@@ -7,26 +7,27 @@
   <meta name="description" content="Pick a flight from Kara and Nate's videos, see what it cost in points, and how close your own cards get you. A fan-made project.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+  <meta property="og:title" content="Recreate This Trip">
+  <meta property="og:description" content="Pick a flight from Kara and Nate's videos and see how close your own points get you. A fan project.">
+  <meta property="og:image" content="https://adamzhu.dev/recreate-this-trip/og.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23ffcd1f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400..700&family=Red+Hat+Display:wght@500..900&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="ptop">
-    <div class="wrap ptop-in">
-      <a class="brand" href="#/">Recreate this trip</a>
-      <nav id="pnav"></nav>
-    </div>
+  <header class="top">
+    <div class="wrap top-in" id="top"><a class="brand" href="#/">Recreate this trip</a></div>
   </header>
-  <aside class="side" id="side"></aside>
-  <header class="mtop" id="mtop"></header>
 
   <main id="view"></main>
 
   <nav class="tabbar" id="tabbar"></nav>
   <footer class="foot wrap">
-    <span>A fan project by <a href="https://github.com/adam-zhu1">Adam Zhu</a></span>
-    <span>Not affiliated with Kara and Nate or Daily Drop</span>
+    <span>A fan project by <a href="https://adamzhu.dev">Adam Zhu</a>. Not affiliated with Kara and Nate or Daily Drop.</span>
+    <span>Prices are from the videos. Seat alerts are a preview. No server, so your data stays in this browser.</span>
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -34,6 +35,7 @@
   <script src="js/anim.js"></script>
   <script src="js/data/trips.js"></script>
   <script src="js/data/transfers.js"></script>
+  <script src="js/data/adventures.js"></script>
   <script src="js/data/airports.js"></script>
   <script src="js/links.js"></script>
   <script src="js/views/auth.js"></script>

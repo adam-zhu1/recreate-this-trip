@@ -14,7 +14,7 @@ RTT.bankShort = { chase: "Chase", amex: "Amex", citi: "Citi", capone: "Capital O
 
 RTT.programs = {
   flyingblue: { name: "Air France-KLM Flying Blue", partners: { chase: 1, amex: 1, citi: 1, capone: 1, bilt: 1 } },
-  emirates:   { name: "Emirates Skywards",          partners: { chase: 1, amex: 0.8, citi: 0.8, capone: 0.75, bilt: 1 } },
+  emirates:   { name: "Emirates Skywards",          partners: { amex: 0.8, citi: 0.8, capone: 0.75, bilt: 1 } },
   aeroplan:   { name: "Air Canada Aeroplan",        partners: { chase: 1, amex: 1, capone: 1, bilt: 1 } },
   lifemiles:  { name: "Avianca LifeMiles",          partners: { amex: 1, citi: 1, capone: 1 } },
   milesmore:  { name: "Lufthansa Miles & More",     partners: {} },

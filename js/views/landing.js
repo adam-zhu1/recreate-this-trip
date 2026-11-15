@@ -1,4 +1,4 @@
-// The public front page: what this is, three things it does, and a way in.
+// The front page: what this is, three things it does, who made it, and a way in.
 RTT.views.landing = {
   title: "",
   public: true,
@@ -10,8 +10,8 @@ RTT.views.landing = {
       .sort((a, b) => (RTT.costPill && RTT.costPill(b) ? 1 : 0) - (RTT.costPill && RTT.costPill(a) ? 1 : 0)).slice(0, 5);
     const ex = priced[0];
     const cta = RTT.auth && RTT.auth.ok()
-      ? `<a class="btn" href="#/${RTT.views.dashboard ? "dashboard" : "trips"}">Open the app</a>`
-      : `<a class="btn" href="#/login?demo=1">Try the demo</a>`;
+      ? `<a class="btn" href="#/trips">Back to your trips</a>`
+      : `<a class="btn" href="#/demo">Try the demo</a>`;
 
     el.innerHTML = `
       <section class="hero">
@@ -50,8 +50,8 @@ RTT.views.landing = {
             <div class="mock-card">
               <div class="mc-codes">${ex ? RTT.codes(ex) : "ATH &rarr; EWR"}</div>
               <div class="muted small">${ex ? RTT.esc(ex.airline + " " + ex.cabin) : "Emirates First"}, ${ex ? RTT.fmt(ex.points) : "85,000"} miles</div>
-              <div class="mc-row"><span class="mc-pct">75%</span><div class="meter"><div style="width:75%"></div></div></div>
-              <div class="mc-steps"><span>Move 40,000 Chase points</span><span>Move 30,000 Amex points</span></div>
+              <div class="mc-row"><span class="mc-pct">73%</span><div class="meter"><div style="width:73%"></div></div></div>
+              <div class="mc-steps"><span>Move 30,000 Bilt points</span><span>Move 40,000 Amex points &rarr; 32,000 miles</span></div>
             </div>
           </div>
         </div>
@@ -70,9 +70,28 @@ RTT.views.landing = {
         </div>
       </section>
 
+      <section class="why wrap" id="why">
+        <div class="why-note">
+          <h2>Why I built this</h2>
+          <p>I've watched Kara and Nate since 8th grade. Every time they fly something like Air France La Première,
+          I end up asking the same thing: could I actually do that with my points? This is the tool I wanted for that question.</p>
+          <p class="sig"><a href="https://adamzhu.dev">Adam Zhu</a></p>
+        </div>
+        <div class="why-real">
+          <h3>What's real and what isn't</h3>
+          <ul>
+            <li>The ${trips.length} trips in the library, each checked against the video or a write-up. Sources are on every trip page.</li>
+            <li>Transfer partners and all the math on your balances.</li>
+            <li>Prices are what the videos showed at the time. Award prices move a lot.</li>
+            <li>Seat alerts are a preview. There's no live seat data behind them.</li>
+            <li>There's no server. Your balances and flights stay in your browser.</li>
+          </ul>
+        </div>
+      </section>
+
       <section class="cta-band wrap">
         <h2>Take a look around.</h2>
-        <p class="muted">Sign in with <b>demo</b> / <b>demo</b>. Sample data, nothing real.</p>
+        <p class="muted">No account needed. It opens with a few card balances filled in so there's something to see.</p>
         ${cta}
       </section>`;
 

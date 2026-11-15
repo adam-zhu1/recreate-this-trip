@@ -15,8 +15,8 @@ RTT.parts.goal = function (el, trip) {
   const prog = RTT.programs && RTT.programs[progKey];
   if (!prog || progKey === "cash") return;
 
-  const balances = RTT.load("balances", {});
-  const mine = new Set(RTT.load("cards", []));
+  const balances = RTT.load("balances", {}) || {};
+  const mine = new Set(RTT.load("cards", []) || []);
   const target = trip.points;
 
   // "direct" = miles already sitting in this airline program
@@ -70,7 +70,7 @@ RTT.parts.goal = function (el, trip) {
       if (s.key === "direct") steps.push(`Use ${RTT.fmt(use)} airline miles you already have`);
       else {
         const pts = Math.min(s.raw, Math.ceil(use / s.ratio / 1000) * 1000); // transfers go in 1,000s
-        steps.push(`Move <b>${RTT.fmt(pts)}</b> ${RTT.esc(s.short)} points${s.ratio !== 1 ? ` &rarr; ${RTT.fmt(pts * s.ratio)} miles` : ""}`);
+        steps.push(`Move <b>${RTT.fmt(pts)}</b> ${RTT.esc(s.short)} ${s.key === "capone" ? "miles" : "points"}${s.ratio !== 1 ? ` &rarr; ${RTT.fmt(pts * s.ratio)} miles` : ""}`);
       }
     }
     const total = have.reduce((a, s) => a + s.miles, 0);

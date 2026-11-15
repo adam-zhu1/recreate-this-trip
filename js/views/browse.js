@@ -1,4 +1,5 @@
-// Trips: every flight in the library as a card, a filter, and a paste box.
+// Trips, the home page once you're in: a greeting with where your points
+// stand, any routes you're watching, then every flight in the library.
 RTT.views.trips = {
   title: "Trips",
   nav: "Trips",
@@ -13,18 +14,29 @@ RTT.views.trips = {
     ];
     let current = "all";
 
+    const u = RTT.auth && RTT.auth.user();
+    const hour = new Date().getHours();
+    const hello = (hour < 5 ? "Good evening" : hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening") +
+      (u && u.id !== "demo" ? ", " + RTT.esc(u.name) : "");
+
     el.innerHTML = `
       <div class="page-head">
-        <div><h1>Trips</h1><p class="muted">${trips.length ? trips.length + " flights from their videos" : "Paste one of their videos to start"}</p></div>
+        <h1>${hello}</h1>
+        <p class="muted">${RTT.parts.summary ? RTT.parts.summary() : ""}</p>
+      </div>
+      <div id="watch"></div>
+      <div class="toolbar">
+        ${trips.length ? `<div class="seg" id="seg" role="group" aria-label="Cabin"></div>` : "<span></span>"}
         <form class="paste" id="paste">
           <input id="link" type="url" inputmode="url" autocomplete="off" placeholder="Paste a YouTube link" aria-label="YouTube link" required>
           <button type="submit">Go</button>
         </form>
       </div>
       <div id="result"></div>
-      ${trips.length ? `<div class="seg" id="seg"></div><div class="grid" id="list"></div>` : ""}
+      ${trips.length ? `<div class="grid" id="list"></div>` : ""}
       <div id="adventures"></div>`;
 
+    drawWatching(RTT.$("#watch", el), trips);
     RTT.parts.paste(RTT.$("#paste", el), RTT.$("#result", el));
     if (!trips.length) return;
 
@@ -55,6 +67,33 @@ RTT.views.trips = {
   },
 };
 
+// "305,000 points across 4 cards. 2 trips you can book now."
+RTT.parts.summary = function () {
+  const bal = RTT.load("balances", {}) || {};
+  const banks = Object.keys(RTT.banks || {}).filter((b) => bal[b] > 0);
+  const total = banks.reduce((a, b) => a + bal[b], 0);
+  if (!total) return `Add your card balances on <a href="#/points">Points</a> to see which trips you can book.`;
+  const ready = RTT.reach ? (RTT.trips || []).filter((t) => t.points && RTT.reach(t, bal).pct >= 100).length : 0;
+  return `<a href="#/points">${RTT.fmt(total)} points</a> across ${banks.length} ${banks.length === 1 ? "card" : "cards"}. ` +
+    (ready ? `${ready} ${ready === 1 ? "trip" : "trips"} you can book now.` : "Not enough for any priced trip yet.");
+};
+
+// Routes you're watching, as one quiet strip. Only shows when there are some.
+function drawWatching(el, trips) {
+  const list = (RTT.load("watching", []) || [])
+    .map((w) => ({ ...w, t: trips.find((t) => w && t.id === w.trip) }))
+    .filter((w) => w.t);
+  if (!list.length) return;
+  el.innerHTML = `
+    <div class="watching">
+      <span class="w-label">Seat alerts</span>
+      <div class="w-list">${list.map((w) => `
+        <a href="#/trip/${w.t.id}"><b>${RTT.esc(w.t.from)} &rarr; ${RTT.esc(w.t.to)}</b> <span>${RTT.esc(String(w.when || "").toLowerCase())}</span></a>`).join("")}
+      </div>
+      <span class="w-note">Preview only. There's no live seat data behind this.</span>
+    </div>`;
+}
+
 // Short label for what a trip cost: "85k miles", "Cash", or nothing.
 RTT.costPill = function (t) {
   if (t.program === "cash") return "Cash";
@@ -65,8 +104,8 @@ RTT.costPill = function (t) {
 // One trip as a card: the video thumbnail does most of the talking.
 RTT.parts.tripRow = function (t, i) {
   const pill = RTT.costPill(t);
-  // with balances in the wallet, show how close you are
-  const bal = RTT.load("balances", {});
+  // with balances on the Points tab, show how close you are
+  const bal = RTT.load("balances", {}) || {};
   const r = RTT.reach && t.points && Object.keys(bal).length ? RTT.reach(t, bal) : null;
   return `
     <a class="tcard" href="#/trip/${t.id}">

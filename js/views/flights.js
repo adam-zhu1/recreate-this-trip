@@ -4,11 +4,11 @@ RTT.views.flights = {
   nav: "My flights",
   order: 2,
   render(el) {
-    let flights = RTT.load("flights", []);
+    let flights = (RTT.load("flights", []) || []).filter((f) => f && f.from && f.to);
 
     el.innerHTML = `
       <div class="page-head"><div><h1>My flights</h1><p class="muted">Every flight you've taken, on one map.</p></div></div>
-      <section class="mapband"><div id="map"></div><span class="sample" id="sample" hidden>Example</span><div id="layers"></div></section>
+      <section class="mapband"><div id="map"></div><p class="map-empty" id="empty" hidden>Add a flight below and it shows up here.</p><div id="layers"></div></section>
       <div id="stats"></div>
       <form class="addrow" id="add">
         <input name="from" type="text" maxlength="3" placeholder="From" aria-label="From airport" list="codes" autocomplete="off" required>
@@ -26,10 +26,20 @@ RTT.views.flights = {
       return;
     }
 
-    const map = L.map(RTT.$("#map", el), { worldCopyJump: true, minZoom: 1, scrollWheelZoom: false, zoomControl: false }).setView([30, -40], 2);
+    const box = RTT.$("#map", el);
+    // never zoom out past the point where the world stops filling the box
+    const fillZ = () => Math.max(1, Math.ceil(Math.log2(box.clientHeight / 256)));
+    const map = L.map(box, {
+      worldCopyJump: true, minZoom: fillZ(), maxZoom: 9, scrollWheelZoom: false, zoomControl: false,
+      maxBounds: [[-85.05, -100000], [85.05, 100000]], maxBoundsViscosity: 1,
+    }).setView([30, -40], fillZ());
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+    // scroll-to-zoom only after a click, so scrolling the page doesn't get stuck on the map
+    map.on("click", () => map.scrollWheelZoom.enable());
+    map.on("mouseout", () => map.scrollWheelZoom.disable());
     // Esri's light gray canvas: free with attribution, no key, quiet enough that the routes stand out
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-      attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+      attribution: "Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
       maxZoom: 10,
     }).addTo(map);
     const mine = L.layerGroup().addTo(map);
@@ -46,33 +56,31 @@ RTT.views.flights = {
         .map((r) => `<option value="${r[0]}">${RTT.esc(RTT.cityName(r[0]))}, ${RTT.esc(r[1])}</option>`).join("");
     });
 
-    const SAMPLE = [{ from: "PIT", to: "ORD" }, { from: "ORD", to: "CDG" }, { from: "CDG", to: "MIA" }];
-
     function draw(animate) {
       mine.clearLayers();
-      const empty = !flights.length;
-      const list = empty ? SAMPLE : flights;
-      RTT.$("#sample", el).hidden = !empty;
+      RTT.$("#empty", el).hidden = flights.length > 0;
       const bounds = [];
-      list.forEach((f, idx) => {
+      flights.forEach((f, idx) => {
         const a = RTT.airport(f.from), b = RTT.airport(f.to);
         if (!a || !b) return;
         const line = RTT.arc(a, b);
-        const pl = L.polyline(line, { color: "#2a2f3a", weight: 2.2, opacity: empty ? 0.35 : 0.9 }).addTo(mine);
+        const pl = L.polyline(line, { color: "#2a2f3a", weight: 2.2, opacity: 0.9 }).addTo(mine);
         if (animate === "all" || (animate === "newest" && idx === 0)) RTT.anim.drawLine(pl);
         // put the dots on the line's own ends so Pacific crossings stay in one piece
         [[a, line[0]], [b, line[line.length - 1]]].forEach(([p, ll]) => {
-          L.circleMarker(ll, { radius: 4, color: "#2a2f3a", weight: 1.2, fillColor: "#fff", fillOpacity: 1, opacity: empty ? 0.4 : 1 })
+          L.circleMarker(ll, { radius: 4, color: "#2a2f3a", weight: 1.2, fillColor: "#fff", fillOpacity: 1 })
             .bindTooltip(p.code + ", " + RTT.cityName(p.code)).addTo(mine);
         });
         bounds.push(...line);
       });
       if (bounds.length) map.fitBounds(bounds, { padding: [50, 50], maxZoom: 5 });
+      if (map.getZoom() < fillZ()) map.setZoom(fillZ(), { animate: false });
 
       RTT.$("#log", el).innerHTML = flights.map((f, i) => {
         const a = RTT.airport(f.from), b = RTT.airport(f.to);
+        const dist = a && b ? ", " + RTT.fmt(RTT.miles(a, b)) + " miles" : "";
         return `<li><div><div class="r">${RTT.esc(f.from)} &rarr; ${RTT.esc(f.to)}</div>
-          <div class="m">${RTT.esc(RTT.cityName(f.from))} to ${RTT.esc(RTT.cityName(f.to))}, ${RTT.fmt(RTT.miles(a, b))} miles${f.date ? ", " + RTT.esc(f.date) : ""}</div></div>
+          <div class="m">${RTT.esc(RTT.cityName(f.from))} to ${RTT.esc(RTT.cityName(f.to))}${dist}${f.date ? ", " + RTT.esc(f.date) : ""}</div></div>
           <button class="x" data-i="${i}" aria-label="Remove flight">&times;</button></li>`;
       }).join("");
 

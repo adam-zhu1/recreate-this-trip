@@ -8,7 +8,7 @@ RTT.views.trip = {
       el.innerHTML = `<a class="back" href="#/trips">&larr; Trips</a><h1>Trip not found</h1>`;
       return;
     }
-    document.title = trip.airline + " " + trip.cabin + " · Recreate This Trip";
+    document.title = trip.from + " to " + trip.to + ", " + trip.airline + " " + trip.cabin + " | Recreate This Trip";
     drawTrip(el, trip);
   },
 };
